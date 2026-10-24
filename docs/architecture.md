@@ -1,37 +1,25 @@
-# Arquitectura del motor 0.2
+# Arquitectura 0.3
 
 | Módulo | Responsabilidad |
 | --- | --- |
-| `main.s` | Reset, MMC3, NMI, mando, bucle principal y paletas |
-| `physics.s` | Posiciones y velocidades con fracciones, colisión por eje, salto y reaparición |
-| `level.s` | Consultas de sólidos, ring de nametables, cámara, carga inicial y SRAM |
-| `entities.s` | Cuatro caminantes con identidad persistente, pisotón y daño |
-| `render.s` | Metasprites de 16×16 y buffer OAM |
-| `audio.s` | Efectos originales por canal de pulso |
-| `generate_assets.py` | CHR 2bpp y nivel columnar, ambos originales |
-| `test_level.json` | Geometría editable del único nivel de prueba |
+| main.s | Reset, mando, NMI, IRQ MMC3, paletas y bucle |
+| physics.s | Integración de movimiento, colisiones, salto, daño y reaparición |
+| abilities.s | Poderes, Yoshi, capa, proyectiles, objetos y plataformas |
+| level.s | Metatiles, pendientes, cámara de 16 bits, streaming y actualizaciones VRAM |
+| world.s | Mapa, selección de bancos, progreso, temporizador y SRAM |
+| entities.s | Ocho actores persistentes, Rex/Koopa/caparazones e interacciones |
+| render.s | Metasprites de tamaño variable, montura y buffer OAM |
+| audio.s | Melodía y efectos APU originales |
+| generate_assets.py | Dibujo CHR 2bpp y conversión de datos al formato NES |
 
-## Cartucho y memoria
+MMC3, iNES 1.0, NTSC, mirroring vertical. Ocho bancos PRG de 8 KiB: 0–3 contienen los cuatro mapas, seleccionados en $8000 por R6; banco 4 permanece en $A000 por R7 y contiene tablas/HUD/mapa mundial. Banco 5 libre. Bancos 6 y 7 contienen código y datos fijos en $C000–$FFFF. CHR-ROM de 8 KiB, fondo $0000 y sprites $1000. No hay instrucciones 65816 ni framebuffer SNES.
 
-iNES 1.0 mapper 4 (MMC3), submapper sin especificar, mirroring vertical, NTSC. PRG-ROM 64 KiB en ocho bancos de 8 KiB. El código y los datos actuales caben en los dos bancos fijos finales, `$C000–$FFFF`; los primeros 48 KiB están reservados para crecimiento. No se usan IRQ de scanline todavía. Esto sacrifica espacio inicial para mantener un punto de arranque sencillo y estable. No depende de instrucciones ilegales ni de hardware de emulador.
+Zeropage para estado/temporales, OAM sombra $0200 y BSS desde $0300, límites verificados durante el build. WRAM $6000–$7FFF con batería: firma $50/$33, máscara de regiones completadas $6002, complemento $6003 y cursor $6004. El mapa mutable activo ocupa $6800–$76FF: 256 columnas × 15 metatiles de 16 px. Cada región incluye otros 1,024 bytes de atributos. No hay compresión todavía. Los valores transitorios del mapa WRAM no se interpretan como progreso al arrancar.
 
-CHR-ROM de 8 KiB: fondo `$0000`, sprites `$1000`. MMC3 se inicializa explícitamente para estas correspondencias y para WRAM legible/escribible. Cero-page contiene estado y temporales; OAM sombra en `$0200`; BSS desde `$0300`, con límites comprobados por el validador. WRAM con batería en `$6000–$7FFF`; solo los primeros cuatro bytes se usan ahora.
+La carga de banco copia el mapa a WRAM; monedas y bloques usados se modifican allí. El NMI sube una columna preparada de tiles/atributos y una actualización puntual de metatile, además de HUD/paletas/OAM. Dos nametables forman el ring horizontal de 512 px. La cámara mundial es de 16 bits; las pruebas verifican lecturas reales de PPU más allá de 2,048 px y al retroceder.
 
-SRAM: `$6000=$50`, `$6001=$31`, `$6002=completed` (0/1), `$6003=completed XOR $FF`. Firma y complemento detectan datos iniciales inválidos; no constituyen un sistema de guardado robusto contra cortes durante escritura. No se guardan checkpoint, enemigos ni un mapa mundial.
+Las primeras cuatro filas de tiles son HUD fijo. La IRQ MMC3 cambia al scroll del escenario debajo del HUD. Durante la reconstrucción con rendering apagado, NMI no modifica PPUADDR/scroll: esto evita corrupción de columnas durante la carga. La señal de frame se libera igualmente para impedir bloqueo al reconstruir.
 
-## Vídeo y tiempo
+Hay 44 metatiles de fondo (176 patrones), letras/dígitos y un recuadro de reserva; 180 patrones de sprites y 32 metasprites. Mario usa cabeza y cuerpo con paletas diferentes; Yoshi se dibuja como montura separada con posición propia. Se respeta OAM de 64 sprites, pero el recorte por ocho sprites en una línea no está resuelto mediante un gestor general. No se usa RAM/PPU inexistente ni extensiones exclusivas de emulador.
 
-Nivel de 128×15 metatiles de 16×16. Cada metatile referencia cuatro tiles de 8×8 y un indicador de solidez; la representación de colisión y la visual leen los mismos datos. El nivel inicial ocupa 1,920 bytes y no está comprimido. Es un formato propio, no el formato de SNES.
-
-Las dos nametables forman un ring horizontal de 512 píxeles. Al cambiar de columna de cámara se prepara una columna de 30 tiles. El NMI la sube con incremento PPU de 32, hace DMA de OAM y restablece scroll y PPUCTRL. La cámara conserva toda su coordenada mundial de 16 bits; solo la dirección PPU usa el ring. La reaparición reconstruye ambas nametables con rendering apagado.
-
-Se midieron **1,114 ciclos como máximo desde entrada NMI hasta la instrucción RTI**, incluidos DMA y la columna, durante las pruebas locales; no incluye la propia RTI ni la latencia previa de interrupción. Frente a aproximadamente 2,273 ciclos de VBlank NTSC, hay margen para este hito. No es un perfil exhaustivo de todos los futuros estados del juego. La prueba de 3,600 fotogramas comprueba estabilidad, no todas las combinaciones posibles de sprites/ciclos.
-
-En este hito las paletas de fondo comparten colores y los atributos son cero; se respeta la cuadrícula real de atributos. Cada actor usa cuatro sprites de 8×8. No hay framebuffer, imágenes SNES pegadas a pantalla ni código 65816 ejecutándose en NES.
-
-## Fuentes técnicas
-
-- [MMC3, NESdev](https://www.nesdev.org/wiki/MMC3).
-- [Registros PPU, NESdev](https://www.nesdev.org/wiki/PPU_registers).
-- [Scroll PPU, NESdev](https://www.nesdev.org/wiki/PPU_scrolling).
-- [Herramientas cc65](https://cc65.github.io/).
+Presupuesto NMI observado: ver `test-results.txt`; la medición incluye el DMA desde entrada NMI hasta antes de RTI. No certifica todos los estados posibles ni toda la duración del bucle principal. La IRQ añade trabajo durante rendering y requiere validación adicional en Mesen/hardware.

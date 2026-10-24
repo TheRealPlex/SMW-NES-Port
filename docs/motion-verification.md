@@ -1,10 +1,10 @@
-# Verificación diferencial de movimiento — motor 0.2
+# Verificación diferencial de movimiento — motores 0.2 y 0.3
 
 Se ejecutó la ROM SNES proporcionada en **Snes9x libretro 1.61**, y la implementación NES en **FCEUX 2.6.5, PPU nueva, NTSC**. La comparación no utiliza un simulador de físicas escrito para generar el resultado esperado.
 
 ## Resultado
 
-12 secuencias, **1,514 fotogramas y 13,626 valores numéricos**. La versión inicial difería en 7,913 valores; la 0.2 coincide en todos los valores de estas secuencias. Los informes exactos son `motion-baseline.txt` y `motion-results.txt`.
+12 secuencias, **1,514 fotogramas y 13,626 valores numéricos**. La versión inicial difería en 7,913 valores; las versiones 0.2 y 0.3 coinciden en todos los valores de estas secuencias. Los informes exactos son `motion-baseline.txt` y `motion-results.txt`.
 
 | Secuencia | Cuadros |
 | --- | ---: |

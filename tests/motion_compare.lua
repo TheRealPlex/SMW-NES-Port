@@ -14,7 +14,8 @@ local function init()
  wr('px',48);memory.writebyte(sym.px+1,0);wr('py',192);wr('px_frac',0);wr('py_frac',0);wr('vx_frac',0);wr('vx',0);wr('vy',6);wr('grounded',1);wr('facing',0)
  if sym.p_meter then wr('p_meter',0) end;if sym.air_state then wr('air_state',0) end
  wr('invulnerable',255);wr('camera',0);memory.writebyte(sym.camera+1,0)
- for i=0,3 do memory.writebyte(sym.enemy_dead+i,1) end
+ for i=0,7 do memory.writebyte(sym.enemy_dead+i,1);memory.writebyte(sym.item_active+i,0) end
+ wr('power',0);wr('yoshi_active',0);wr('yoshi_mounted',0);wr('flight_timer',0);wr('balloon_timer',0);wr('star_timer',0)
 end
 memory.registerexec(sym.UpdatePlayer,function()
  if done then return end
@@ -41,6 +42,11 @@ memory.registerexec(sym.UpdatePlayer,function()
  previous=buttons;remaining=remaining-1;step=step+1
 end)
 emu.speedmode('maximum')
-for i=1,3000 do if done then break end;emu.frameadvance() end
+for i=1,4000 do
+ if done then break end
+ if rd('game_mode')==0 then wr('world_cursor',1) end
+ joypad.set(1,{A=(i==60 or i==61),B=false,right=false,left=false,start=false,select=false,up=false,down=false})
+ emu.frameadvance()
+end
 memory.registerexec(sym.UpdatePlayer,nil)
 result:write('TOTAL frames='..total..' compared_values='..checked..' differing_values='..differences..' complete='..tostring(done)..'\n');result:close();trace:close();emu.exit()

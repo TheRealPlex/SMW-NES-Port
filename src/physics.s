@@ -12,39 +12,64 @@
  sta grounded
  sta facing
  sta paused
+ sta cape_spin
+ sta flight_timer
+ sta balloon_timer
+ sta yoshi_mounted
+ sta tongue_timer
+ sta standing_platform
+ sta invulnerable
  sta camera
  sta camera+1
  lda checkpoint
  beq @start
- lda #4
- sta px+1
- lda #0
+ lda checkpoint_x
  sta px
- lda #3
- sta camera+1
- lda #112
- sta camera
- jmp @y
+ lda checkpoint_x+1
+ sta px+1
+ lda checkpoint_y
+ sta py
+ jsr UpdateCamera
+ jmp @finish
 @start:
  lda #40
  sta px
  lda #0
  sta px+1
-@y:
- lda #6
- sta vy
  lda #192
  sta py
- lda #90
- sta invulnerable
+@finish:
+ lda #6
+ sta vy
  lda #1
  sta rebuild
+ sta hud_dirty
  rts
 .endproc
 .proc Die
  inc deaths
+ lda #0
+ sta power
+ sta star_timer
+ sta reserve_item
+ lda lives
+ beq :+
+ dec lives
+:
+ lda lives
+ bne @again
+ lda #5
+ sta lives
+ jsr ReturnToMap
+ rts
+@again:
  jsr SoundHurt
- jmp Respawn
+ jsr Respawn
+ lda #90
+ sta invulnerable
+ lda #1
+ sta palette_dirty
+ rts
 .endproc
 .proc UpdatePlayer
  lda px
@@ -53,19 +78,32 @@
  sta saved_x+1
  lda py
  sta saved_y
+ lda grounded
+ sta was_grounded
+ lda #0
+ sta head_offset
+ sta slope_mode
+ lda power
+ ora yoshi_mounted
+ beq :+
+ lda #16
+ sta head_offset
+:
  ; SMW integrates last frame's speeds before calculating the next speeds.
  jsr IntegrateX
  ; World boundary clamp.
  lda px+1
  bmi @clampleft
- cmp #7
+ cmp world_max_hi
  bcc @collideX
+ bne @rightEdge
  lda px
  cmp #$E1
  bcc @collideX
+@rightEdge:
  lda #$E0
  sta px
- lda #7
+ lda world_max_hi
  sta px+1
  jmp @collideX
 @clampleft:
@@ -94,6 +132,8 @@
  sta probe_x+1
 @probeSide:
  lda py
+ sec
+ sbc head_offset
  clc
  adc #2
  sta probe_y
@@ -116,17 +156,18 @@
  sta px_frac
 @verticalStart:
  jsr IntegrateY
- ; Clamp to ceiling if 8-bit Y underflowed while rising.
  lda vy
  bpl @vertical
- lda saved_y
- cmp #16
- bcs @vertical
+ lda #32
+ clc
+ adc head_offset
+ sta temp
  lda py
- cmp #224
- bcc @vertical
- lda #0
+ cmp temp
+ bcs @vertical
+ lda temp
  sta py
+ lda #0
  sta vy
 @vertical:
  lda #0
@@ -140,11 +181,20 @@
  sta probe_x+1
  lda vy
  bmi @ceiling
+ lda #1
+ sta slope_mode
  lda py
  clc
  adc #16
  jcs @fell
  sta probe_y
+ lda was_grounded
+ beq :+
+ lda probe_y
+ clc
+ adc #4
+ sta probe_y
+:
  jsr ProbeSolid
  bne @land
  lda px
@@ -161,11 +211,7 @@
  jcs @fell
  jmp @motionEnd
 @land:
- lda hit_row
- asl a
- asl a
- asl a
- asl a
+ lda contact_surface
  sec
  sbc #16
  sta py
@@ -176,7 +222,11 @@
  sta grounded
  jmp @motionEnd
 @ceiling:
+ lda #0
+ sta slope_mode
  lda py
+ sec
+ sbc head_offset
  sta probe_y
  jsr ProbeSolid
  bne @headhit
@@ -190,6 +240,7 @@
  jsr ProbeSolid
  beq @motionEnd
 @headhit:
+ jsr TryBumpBlock
  lda hit_row
  clc
  adc #1
@@ -197,11 +248,14 @@
  asl a
  asl a
  asl a
+ clc
+ adc head_offset
  sta py
  lda #0
  sta vy
  sta air_state
 @motionEnd:
+ jsr CheckPlatforms
  lda pressed
  and #BTN_A
  beq @nextVelocity
@@ -236,24 +290,8 @@
 @nextVelocity:
  jsr HorizontalSpeed
  jsr GravitySpeed
+ jsr ApplyCapeFlight
 @progress:
- lda px+1
- cmp #4
- bcc @done
- lda #1
- sta checkpoint
- lda px+1
- cmp #7
- bcc @done
- lda px
- cmp #$B0
- bcc @done
- lda completed
- bne @done
- lda #1
- sta completed
- jsr SaveProgress
- jsr SoundGoal
 @done:
  rts
 @fell: jmp Die

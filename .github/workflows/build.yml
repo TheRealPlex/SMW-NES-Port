@@ -19,14 +19,14 @@ jobs:
       - name: Compile and validate
         run: make check
       - name: Check reproducible stable ROM
-        run: cmp build/smw-nes-physics-v0.2.nes roms/smw-nes-physics-v0.2.nes
+        run: cmp build/smw-nes-adventure-v0.3.nes roms/smw-nes-adventure-v0.3.nes
       - name: Emulate gameplay, save reload and full traversal
         run: make test
       - name: Upload original ROM and validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smw-nes-physics-v0.2
+          name: smw-nes-adventure-v0.3
           if-no-files-found: error
           path: |
             build/*.nes

@@ -1,34 +1,64 @@
-PASS boot_grounded x=40 y=192
-PASS visible_picture sampled_colors=7
-PASS early_enemy_present 
-PASS walk_input_speed x=85 vx=21
-PASS ground_friction vx=0 drift=14
-PASS run_faster_than_walk vx=36
-PASS reverse_acceleration vx=-35
-PASS jump_lands 
-PASS variable_jump short_apex=159 held_apex=128
-PASS ceiling_collision minimum_y=176
-PASS solid_wall x=354
-PASS platform_landing x=376 y=160
-PASS vram_after_forward_scroll camera=715 mismatched_tiles=0
-PASS bidirectional_camera ahead=715 back=608
-PASS vram_after_backward_scroll camera=608 mismatched_tiles=0
-PASS pause 
-PASS unpause 
-PASS checkpoint_activates 
-PASS checkpoint_respawn 
-PASS reverse_after_checkpoint x=928 camera=832
-PASS vram_after_checkpoint_return camera=832 mismatched_tiles=0
-PASS enemy_stomp 
-PASS enemy_side_damage 
-PASS offscreen_entity_not_destroyed 
-PASS entity_reappears_on_return 
-PASS enemy_left_world_boundary 
-PASS enemy_right_world_boundary 
-PASS goal_sets_progress 
-PASS vram_final_screen camera=1792 mismatched_tiles=0
-PASS soak_3600_frames 
-PASS nmi_cycle_budget max_cycles_to_RTI=1114
+Adventure 0.3 — FCEUX 2.6.5, new PPU, NTSC; 2026-10-24
+Compilation and static validation: PASS
+
+PASS overworld_boot
+PASS locked_path
+PASS enter_reference_region
+PASS banked_level_loaded
+PASS mushroom_transformation
+PASS fire_transformation
+PASS fireball_created
+PASS reserve_item_released
+PASS feather_transformation
+PASS cape_spin
+PASS p_meter_real_run meter=112 x=255
+PASS cape_takeoff y=126
+PASS cape_pitch_controls up=232 dive=48
+PASS cape_glide
+PASS yoshi_mount
+PASS yoshi_tongue_eats
+PASS yoshi_dismount
+PASS yoshi_flees_on_damage
+PASS star_invincibility
+PASS star_defeats_enemy
+PASS one_up
+PASS p_balloon_lift
+PASS interactive_question_block
+PASS question_spawns_item
+PASS streaming_above_2048_pixels mismatched_tiles=0 camera=2471
+PASS backtracking_bank_ring mismatched_tiles=0 camera=2421
+PASS moving_platform_landing
+PASS moving_platform_carries
+PASS checkpoint_activates
+PASS checkpoint_respawn
+PASS normal_exit_unlocks_path
+PASS return_to_overworld
+PASS yoshi_carried_on_map
+PASS enter_second_region
+PASS yoshi_carried_into_next_stage
+PASS enter_castle
+PASS world_progress_saved
+PASS vblank_budget max_cycles=1724
 FAILURES 0
+
 PASS save_survives_emulator_close_and_reopen
-PASS controller_only_full_course max_x=1968 deaths=0
+
+PASS controller_only_first_stage max_x=3967 deaths=1 power=0 mounted=0
+
+PASS walk_right mismatched_frames=0/100
+PASS walk_left mismatched_frames=0/100
+PASS run_right mismatched_frames=0/150
+PASS run_left mismatched_frames=0/150
+PASS brake_run mismatched_frames=0/160
+PASS reverse_run mismatched_frames=0/160
+PASS release_run_button mismatched_frames=0/155
+PASS jump_tap mismatched_frames=0/72
+PASS jump_hold mismatched_frames=0/82
+PASS run_jump mismatched_frames=0/187
+PASS air_reverse mismatched_frames=0/88
+PASS release_air_control mismatched_frames=0/110
+TOTAL frames=1514 compared_values=13626 differing_values=0 complete=true
+
+Human gameplay: NOT RUN
+Mesen: NOT RUN
+Physical NES: NOT RUN

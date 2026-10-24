@@ -6,11 +6,13 @@
   "WRAM_bytes": 8192,
   "battery": true,
   "mirroring": "vertical",
+  "world_banks": 4,
+  "sprite_tiles": 180,
   "vectors": [
-    "C0E8",
+    "C0F4",
     "C000",
-    "C12B"
+    "C176"
   ],
-  "sha256": "1ea8ec792fe6986e30882c487eed06e838282b7168df743fc1f901da8134619f",
+  "sha256": "cb94dc1f5016a5329d118e8fa1b609c592e6ed87de7a0f5e2c0176018d5b1f94",
   "file_bytes": 73744
 }

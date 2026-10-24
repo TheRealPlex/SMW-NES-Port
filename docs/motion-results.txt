@@ -1,10 +1,13 @@
-PASS walk_right mismatched_frames=0/100 
-PASS walk_left mismatched_frames=0/100 
-PASS run_right mismatched_frames=0/150 
-PASS run_left mismatched_frames=0/150 
-PASS brake_run mismatched_frames=0/160 
-PASS reverse_run mismatched_frames=0/160 
-PASS release_run_button mismatched_frames=0/155 
-PASS jump_tap mismatched_frames=0/72 
-PASS jump_hold mismatched_frames=0/82 
-PASS run_jump mismatched_frames=0/187 
+PASS walk_right mismatched_frames=0/100
+PASS walk_left mismatched_frames=0/100
+PASS run_right mismatched_frames=0/150
+PASS run_left mismatched_frames=0/150
+PASS brake_run mismatched_frames=0/160
+PASS reverse_run mismatched_frames=0/160
+PASS release_run_button mismatched_frames=0/155
+PASS jump_tap mismatched_frames=0/72
+PASS jump_hold mismatched_frames=0/82
+PASS run_jump mismatched_frames=0/187
+PASS air_reverse mismatched_frames=0/88
+PASS release_air_control mismatched_frames=0/110
+TOTAL frames=1514 compared_values=13626 differing_values=0 complete=true

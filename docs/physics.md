@@ -17,4 +17,4 @@ Cambios comprobados mediante trazas de la ROM original:
 
 La integración utiliza velocidad Q4.4 y una fracción adicional de ocho bits para la aceleración horizontal. Posición X: 16 bits enteros más ocho fraccionarios. Posición Y: ocho bits enteros más ocho fraccionarios en este laboratorio de una pantalla de alto.
 
-Las colisiones rectangulares de NES, animaciones, enemigos y cámara todavía son componentes provisionales. No se han reproducido pendientes, agua, superficies resbaladizas, agacharse, spin jump, transporte de objetos, capa o Yoshi. El resultado diferencial es específico de los casos planos documentados, no una afirmación de que SMW completo ya se ejecute en NES.
+La versión 0.3 añade colisiones de pendientes básicas, poderes, capa y Yoshi, sin ampliar todavía la equivalencia diferencial a esas mecánicas. Faltan agua, superficies resbaladizas, agacharse, spin jump y transporte de objetos. El resultado diferencial sigue siendo específico de los casos planos documentados; no afirma equivalencia de SMW completo.
