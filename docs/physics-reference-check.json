@@ -1,0 +1,33 @@
+{
+  "reference_commit": "30643c7595a7d097d731de69476f8059c7cf98c3",
+  "checks": [
+    {
+      "symbol": "DATA_00D2BD",
+      "snes_address": "00D2BD",
+      "file_offset": "0052BD",
+      "bytes": "b0b6aeb4abb2a9b0a6aea4aba1a99fa6",
+      "matched": true
+    },
+    {
+      "symbol": "MarioAccel_",
+      "snes_address": "00D345",
+      "file_offset": "005345",
+      "bytes": "80fe80fe80018001",
+      "matched": true
+    },
+    {
+      "symbol": "DATA_00D535",
+      "snes_address": "00D535",
+      "file_offset": "005535",
+      "bytes": "ec14dc24dc24d030",
+      "matched": true
+    },
+    {
+      "symbol": "DATA_00D7A5",
+      "snes_address": "00D7A5",
+      "file_offset": "0057A5",
+      "bytes": "06030410f40103040506",
+      "matched": true
+    }
+  ]
+}

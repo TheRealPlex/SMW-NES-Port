@@ -1,0 +1,8 @@
+{
+  "name": "MEADOW LAB / ORIGINAL TEST COURSE", "width": 128, "height": 15,
+  "spawn": [40,192], "checkpoint": [1024,192], "goal_x": 1968,
+  "ground_row": 13, "gaps": [[28,30],[61,63],[90,92]],
+  "rectangles": [[10,10,3,1,3],[17,9,3,1,4],[23,11,2,2,5],[35,11,2,2,7],[37,10,2,3,7],[44,9,5,1,3],[70,11,2,2,7],[72,10,2,3,7],[78,9,4,1,3],[99,10,3,1,4],[110,11,4,1,3]],
+  "enemies": [[224,192],[640,192],[1184,192],[1648,192]],
+  "note": "Entirely original layout, not a conversion of a Nintendo level."
+}

@@ -1,0 +1,10 @@
+# Commercial reference data must never be committed.
+*.sfc
+*.smc
+reference/
+reference-disassembly/
+upload/
+build/
+*.sav
+*.fcs
+__pycache__/

@@ -1,0 +1,31 @@
+{
+  "source_name": "Super Mario World (USA).sfc",
+  "file_bytes": 524288,
+  "payload_bytes": 524288,
+  "copier_header_bytes": 0,
+  "sha256": "0838e531fe22c077528febe14cb3ff7c492f1f5fa8de354192bdff7137c27f5b",
+  "crc32": "B19ED489",
+  "mapping": "LoROM",
+  "internal_header_offset": "0x007FC0",
+  "title": "SUPER MARIOWORLD",
+  "map_mode": "0x20",
+  "cartridge_type": 2,
+  "declared_rom_bytes": 524288,
+  "declared_sram_bytes": 2048,
+  "destination_code": 1,
+  "region": "North America (USA/Canada)",
+  "revision_byte": 0,
+  "revision": "0 (internal metadata)",
+  "checksum": "A0DA",
+  "checksum_complement": "5F25",
+  "checksum_pair_valid": true,
+  "checksum_calculated": "A0DA",
+  "checksum_matches": true,
+  "declared_size_matches": true,
+  "reset_vector": "0x8000",
+  "limits": "Header/checksum consistency is not proof of an unmodified dump; no external trusted hash database comparison was performed.",
+  "sources": [
+    "https://snes.nesdev.org/wiki/ROM_header",
+    "https://snes.nesdev.org/wiki/ROM_file_formats"
+  ]
+}
