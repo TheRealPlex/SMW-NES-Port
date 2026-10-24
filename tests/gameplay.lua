@@ -23,7 +23,8 @@ local function frames(n,b)
   trace:write(string.format('%d,%d,%d,%d,%d,%d,%d\n',emu.framecount(),word('px'),rd('py'),s8('vx'),s8('vy'),word('camera'),rd('grounded')))
  end
 end
-local function shot(n) gui.savescreenshotas(root..'/build/'..n..'.png') end
+local capture=dofile(root..'/tests/capture.lua')
+local function shot(n) capture(root..'/build/'..n..'.ppm') end
 local worldfile=assert(io.open(root..'/build/world.bin','rb'))
 local world=worldfile:read('*a');worldfile:close()
 local function check_vram(name)

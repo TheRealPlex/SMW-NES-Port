@@ -32,4 +32,4 @@ for i=1,4000 do
 end
 local f=assert(io.open(root..'/build/traversal-results.txt','w'))
 f:write((success and 'PASS ' or 'FAIL ')..'controller_only_full_course max_x='..maxx..' deaths='..rd('deaths')..'\n');f:close();trace:close()
-gui.savescreenshotas(root..'/build/traversal.png');emu.exit()
+dofile(root..'/tests/capture.lua')(root..'/build/traversal.ppm');emu.exit()

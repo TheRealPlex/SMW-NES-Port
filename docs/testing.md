@@ -1,6 +1,6 @@
 # Validación del hito 0.1
 
-Fecha local: 24 de octubre de 2026. Compilador: ca65/ld65 del paquete cc65 2.19 de Ubuntu. Emulador: FCEUX 2.6.5, core PPU nuevo, NTSC. Render real bajo Xvfb/Mesa; capturas generadas por el propio emulador. No se utilizó un emulador escrito para este proyecto.
+Fecha local: 24 de octubre de 2026. Compilador: ca65/ld65 del paquete cc65 2.19 de Ubuntu. Emulador: FCEUX 2.6.5, core PPU nuevo, NTSC. Render real bajo Xvfb/Mesa; capturas mediante lectura RGB exacta del framebuffer emulado (`emu.getscreenpixel`), sin dibujar overlays, convertidas a PNG sin pérdidas. La caché de snapshots de la interfaz de FCEUX retenía algunos cuadros de blanking en turbo; por eso se utiliza esta lectura directa y se rechazan imágenes uniformes. No se utilizó un emulador escrito para este proyecto.
 
 | Categoría | Resultado y límite |
 | --- | --- |
