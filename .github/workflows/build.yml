@@ -1,0 +1,39 @@
+name: Build and emulate NES
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-rom:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native tools and emulator
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cc65 fceux xvfb xauth ripgrep
+          echo /usr/games >> "$GITHUB_PATH"
+      - name: Compile and validate
+        run: make check
+      - name: Check reproducible stable ROM
+        run: cmp build/smw-nes-phase1.nes roms/smw-nes-phase1.nes
+      - name: Emulate gameplay, save reload and full traversal
+        run: make test
+      - name: Upload original ROM and validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smw-nes-phase1
+          if-no-files-found: error
+          path: |
+            build/*.nes
+            build/*.map
+            build/*.dbg
+            build/labels.txt
+            build/*.png
+            build/*results.*
+            build/*.csv
+            build/fceux*.log

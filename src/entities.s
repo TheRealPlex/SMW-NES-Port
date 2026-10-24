@@ -32,20 +32,30 @@ EnemyStartHi: .byte >224,>640,>1184,>1648
  sta temp2
  lda enemy_hi,x
  sbc camera+1
- bmi @interaction
+ jmi @interaction
  cmp #2
- bcs @interaction
+ jcs @interaction
  cmp #1
  bne @active
  lda temp2
  cmp #128
- bcs @interaction
+ jcs @interaction
 @active:
  lda frame
  and #1
- bne @interaction
+ jne @interaction
  lda enemy_dir,x
  beq @left
+ lda enemy_hi,x
+ cmp #7
+ bne @stepRight
+ lda enemy_x,x
+ cmp #$F0
+ bcc @stepRight
+ lda #0
+ sta enemy_dir,x
+ jmp @interaction
+@stepRight:
  inc enemy_x,x
  bne @probe
  inc enemy_hi,x
@@ -53,6 +63,12 @@ EnemyStartHi: .byte >224,>640,>1184,>1648
 @left:
  lda enemy_x,x
  bne :+
+ lda enemy_hi,x
+ bne @borrow
+ lda #1
+ sta enemy_dir,x
+ jmp @interaction
+@borrow:
  dec enemy_hi,x
 :
  dec enemy_x,x

@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "mapper": 4,
+  "PRG_bytes": 65536,
+  "CHR_bytes": 8192,
+  "WRAM_bytes": 8192,
+  "battery": true,
+  "mirroring": "vertical",
+  "vectors": [
+    "C0E8",
+    "C000",
+    "C12B"
+  ],
+  "sha256": "133e90c19d23623934385f9b7f877b39147ae3f4821e73c1a78228e4f6ee28b9",
+  "file_bytes": 73744
+}
