@@ -1,12 +1,12 @@
-# Super Mario World NES Port — hito 0.1 / fase 1
+# SMW → NES — motor de físicas 0.2
 
-ROM **NES nativa**, escrita en 6502 con ca65/ld65. Es el inicio de un proyecto de adaptación; **no es el port completo de Super Mario World**.
+Motor **NES nativo**, escrito en 6502 con ca65/ld65. La versión 0.2 corrige las físicas comparándolas con la ejecución de la ROM SNES original. **Todavía no reconstruye el contenido de Super Mario World**: el escenario, los gráficos y los enemigos visibles siguen siendo el laboratorio original de prueba.
 
 La versión actual contiene un único recorrido original de prueba de 2,048 × 240 píxeles, un protagonista pequeño con arte provisional original, cuatro enemigos caminantes y una meta. No incorpora niveles, gráficos ni audio extraídos de Nintendo.
 
 ## Jugar
 
-ROM estable: [`roms/smw-nes-phase1.nes`](roms/smw-nes-phase1.nes).
+ROM estable: [`roms/smw-nes-physics-v0.2.nes`](roms/smw-nes-physics-v0.2.nes).
 
 Abrí el archivo `.nes` en Mesen y configurá el mando 1:
 
@@ -33,11 +33,16 @@ export PATH="$PATH:/usr/games"
 make
 make check
 make test
+make motion  # comparación diferencial aislada
 ```
 
-Resultado: `build/smw-nes-phase1.nes` (73,744 bytes). La compilación **no necesita la ROM SNES**, conexión de red ni paquetes Python externos. `make test` utiliza FCEUX y tres procesos de emulación: mecánicas, reapertura del guardado y recorrido completo por entradas del mando. Deja capturas, trazas CSV y resultados en `build/`.
+Resultado: `build/smw-nes-physics-v0.2.nes` (73,744 bytes). La compilación **no necesita la ROM SNES**, conexión de red ni paquetes Python externos. `make test` utiliza FCEUX y tres procesos de emulación: mecánicas, reapertura del guardado y recorrido completo por entradas del mando. Deja capturas, trazas CSV y resultados en `build/`.
 
 GitHub Actions compila, valida, ejecuta las pruebas y publica artefactos de este material original. Su resultado remoto debe consultarse en la pestaña Actions; los resultados locales conservados están en [`docs/test-results.txt`](docs/test-results.txt).
+
+## Verificación contra SMW
+
+En 12 secuencias controladas, el motor NES coincide con Snes9x durante **1,514 cuadros y 13,626 valores**: desplazamientos relativos, subpíxeles, velocidades, P-meter y estado aéreo. Se verifican aceleración, frenado, giro, carrera sostenida, salto corto/largo y control aéreo sobre suelo plano. La versión anterior difería en 7,913 valores. El protocolo y los límites están en [`docs/motion-verification.md`](docs/motion-verification.md). La referencia se puede regenerar con una ROM local; ningún archivo comercial se incluye en la CI.
 
 ## Implementado
 
@@ -52,9 +57,9 @@ GitHub Actions compila, valida, ejecuta las pruebas y publica artefactos de este
 
 No hay Super/Fire/Cape Mario, Yoshi, capa, vuelo, plataformas móviles, objetos transportables, bloques activables, monedas, tuberías transitables, puertas, pendientes, agua, scroll vertical, mapa de Dinosaur Land, salidas secretas ni música. Las tuberías y bloques visibles son obstáculos sólidos. Los enemigos son un tipo genérico provisional, no todas las especies de SMW. No hay conversor de niveles de SMW ni niveles comerciales adaptados.
 
-Las físicas solo reproducen un subconjunto de constantes y escala comprobadas: **no se ha demostrado equivalencia cuadro por cuadro con SNES**. Los enemigos eliminados permanecen eliminados durante la sesión; el daño reinicia al personaje pequeño. Los sprites pueden recortarse al entrar por los bordes y no se ha implementado un administrador general del límite de ocho sprites por línea.
+La equivalencia cuadro por cuadro se ha comprobado **solo para el subconjunto de suelo plano y saltos documentado**. No se ha comprobado para otras superficies, colisiones o mecánicas. Los enemigos eliminados permanecen eliminados durante la sesión; el daño reinicia al personaje pequeño. Los sprites pueden recortarse al entrar por los bordes y no se ha implementado un administrador general del límite de ocho sprites por línea.
 
-Próximo hito recomendado: estados pequeño/grande, power-up original, bloques interactivos y plataformas móviles, con nuevas pruebas. Después: entidades más amplias, Yoshi y capa. Las 96 salidas son una meta de largo plazo.
+Próximo hito: reconstruir una sección reconocible de un nivel de SMW con su geometría y colocación de objetos, y comprobar colisiones y cámara contra esa referencia. Después, ampliar los estados y mecánicas mediante pruebas equivalentes. Las 96 salidas siguen siendo una meta de largo plazo. La ROM 0.1 se conserva en `roms/smw-nes-phase1.nes` y en el historial Git.
 
 ## Referencia, arquitectura y evidencias
 

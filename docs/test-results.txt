@@ -1,24 +1,24 @@
 PASS boot_grounded x=40 y=192
 PASS visible_picture sampled_colors=7
 PASS early_enemy_present 
-PASS walk_input_speed x=87 vx=20
-PASS ground_friction vx=0 drift=11
+PASS walk_input_speed x=85 vx=21
+PASS ground_friction vx=0 drift=14
 PASS run_faster_than_walk vx=36
-PASS reverse_acceleration vx=-9
+PASS reverse_acceleration vx=-35
 PASS jump_lands 
-PASS variable_jump short_apex=158 held_apex=127
+PASS variable_jump short_apex=159 held_apex=128
 PASS ceiling_collision minimum_y=176
 PASS solid_wall x=354
 PASS platform_landing x=376 y=160
-PASS vram_after_forward_scroll camera=717 mismatched_tiles=0
-PASS bidirectional_camera ahead=717 back=668
-PASS vram_after_backward_scroll camera=668 mismatched_tiles=0
+PASS vram_after_forward_scroll camera=715 mismatched_tiles=0
+PASS bidirectional_camera ahead=715 back=608
+PASS vram_after_backward_scroll camera=608 mismatched_tiles=0
 PASS pause 
 PASS unpause 
 PASS checkpoint_activates 
 PASS checkpoint_respawn 
-PASS reverse_after_checkpoint x=925 camera=829
-PASS vram_after_checkpoint_return camera=829 mismatched_tiles=0
+PASS reverse_after_checkpoint x=928 camera=832
+PASS vram_after_checkpoint_return camera=832 mismatched_tiles=0
 PASS enemy_stomp 
 PASS enemy_side_damage 
 PASS offscreen_entity_not_destroyed 
@@ -28,7 +28,7 @@ PASS enemy_right_world_boundary
 PASS goal_sets_progress 
 PASS vram_final_screen camera=1792 mismatched_tiles=0
 PASS soak_3600_frames 
-PASS nmi_cycle_budget max_cycles_to_RTI=1115
+PASS nmi_cycle_budget max_cycles_to_RTI=1114
 FAILURES 0
 PASS save_survives_emulator_close_and_reopen
-PASS controller_only_full_course max_x=1969 deaths=2
+PASS controller_only_full_course max_x=1968 deaths=0

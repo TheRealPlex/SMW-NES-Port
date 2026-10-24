@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import hashlib,json,struct
-r=Path('build/smw-nes-phase1.nes').read_bytes()
+r=Path('build/smw-nes-physics-v0.2.nes').read_bytes()
 assert r[:4]==b'NES\x1a'
 prg,chr=r[4]*16384,r[5]*8192
 assert len(r)==16+prg+chr==73744

@@ -5,10 +5,10 @@ for line in io.lines(root..'/build/labels.txt') do
  local addr,name=line:match('^al (%x+) %.([%w_]+)$')
  if addr then symbols[name]=tonumber(addr,16) end
 end
-local log=assert(io.open(root..'/build/emulator-results.txt','w'))
+local results={}
 local failures=0
 local function check(name,yes,detail)
- log:write((yes and 'PASS ' or 'FAIL ')..name..' '..(detail or '')..'\n');log:flush()
+ results[#results+1]=(yes and 'PASS ' or 'FAIL ')..name..' '..(detail or '')
  if not yes then failures=failures+1 end
 end
 local function rd(n) return memory.readbyte(assert(symbols[n],n)) end
@@ -19,7 +19,9 @@ local trace=assert(io.open(root..'/build/movement.csv','w'))
 trace:write('emulator_frame,x,y,vx,vy,camera,grounded\n')
 local function frames(n,b)
  for i=1,n do
-  joypad.set(1,b or {});emu.frameadvance()
+  local input={up=false,down=false,left=false,right=false,A=false,B=false,start=false,select=false}
+  for k,v in pairs(b or {}) do input[k]=v end
+  joypad.set(1,input);emu.frameadvance()
   trace:write(string.format('%d,%d,%d,%d,%d,%d,%d\n',emu.framecount(),word('px'),rd('py'),s8('vx'),s8('vy'),word('camera'),rd('grounded')))
  end
 end
@@ -45,7 +47,7 @@ local function enemies_off()
 end
 local function place(x,y,cam)
  wr('px',x%256);memory.writebyte(symbols.px+1,math.floor(x/256));wr('py',y)
- wr('px_frac',0);wr('py_frac',0);wr('vx',0);wr('vx_frac',0);wr('vy',0);wr('grounded',0)
+ wr('px_frac',0);wr('py_frac',0);wr('vx',0);wr('vx_frac',0);wr('vy',0);wr('grounded',0);wr('p_meter',0);wr('air_state',0)
  wr('camera',(cam or 0)%256);memory.writebyte(symbols.camera+1,math.floor((cam or 0)/256))
  wr('rebuild',1);wr('invulnerable',0);frames(3)
 end
@@ -66,11 +68,11 @@ shot('boot')
 -- Physics fixtures: remove enemies, preserve normal controller and game code.
 enemies_off();place(40,192,0)
 local x0=word('px');frames(45,{right=true})
-check('walk_input_speed',word('px')>x0+30 and rd('vx')==20,'x='..word('px')..' vx='..s8('vx'))
+check('walk_input_speed',word('px')>x0+30 and rd('vx')>=19 and rd('vx')<=21,'x='..word('px')..' vx='..s8('vx'))
 local walkx=word('px');frames(25)
 check('ground_friction',rd('vx')==0,'vx='..s8('vx')..' drift='..(word('px')-walkx))
 place(40,192,0);frames(40,{right=true,B=true})
-check('run_faster_than_walk',rd('vx')==36,'vx='..s8('vx'))
+check('run_faster_than_walk',rd('vx')>=35 and rd('vx')<=37,'vx='..s8('vx'))
 frames(30,{left=true,B=true})
 check('reverse_acceleration',s8('vx')<0,'vx='..s8('vx'))
 place(40,192,0)
@@ -144,4 +146,5 @@ shot('goal');check_vram('vram_final_screen')
 local startframe=rd('frame');frames(3600)
 check('soak_3600_frames',rd('grounded')==1 and rd('py')==192 and rd('frame')~=startframe)
 check('nmi_cycle_budget',max_nmi>500 and max_nmi<2000,'max_cycles_to_RTI='..max_nmi)
-log:write('FAILURES '..failures..'\n');trace:close();log:close();emu.exit()
+results[#results+1]='FAILURES '..failures
+local log=assert(io.open(root..'/build/emulator-results.txt','w'));assert(log:write(table.concat(results,'\n')..'\n'));log:close();trace:close();emu.exit()

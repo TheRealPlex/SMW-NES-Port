@@ -1,4 +1,4 @@
-# Validación del hito 0.1
+# Validación del motor 0.2
 
 Fecha local: 24 de octubre de 2026. Compilador: ca65/ld65 del paquete cc65 2.19 de Ubuntu. Emulador: FCEUX 2.6.5, core PPU nuevo, NTSC. Render real bajo Xvfb/Mesa; capturas mediante lectura RGB exacta del framebuffer emulado (`emu.getscreenpixel`), sin dibujar overlays, convertidas a PNG sin pérdidas. La caché de snapshots de la interfaz de FCEUX retenía algunos cuadros de blanking en turbo; por eso se utiliza esta lectura directa y se rechazan imágenes uniformes. No se utilizó un emulador escrito para este proyecto.
 
@@ -20,7 +20,7 @@ Fecha local: 24 de octubre de 2026. Compilador: ca65/ld65 del paquete cc65 2.19 
 
 El fixture de guardado pone el indicador a cero en RAM antes de que la meta escriba 1 mediante código del juego. `persistence.lua` se ejecuta en **un segundo proceso de FCEUX**, tras cerrar normalmente el primero, y verifica que 1 se cargó de SRAM. No usa savestates para demostrar persistencia.
 
-`traversal.lua` ejecuta un tercer proceso, enciende de nuevo la consola emulada y recorre el nivel **sin escribir RAM**: solo consulta geometría y estado para decidir entradas de mando. Completó el recorrido con dos muertes y recuperaciones por checkpoint. Es evidencia de que existe una ruta jugable, no de que una persona lo haya probado ni de que todas las rutas sean correctas.
+`traversal.lua` ejecuta un tercer proceso, enciende de nuevo la consola emulada y recorre el nivel **sin escribir RAM**: solo consulta geometría y estado para decidir entradas de mando. Completó el recorrido sin muertes en esta versión. Es evidencia de que existe una ruta jugable, no de que una persona lo haya probado ni de que todas las rutas sean correctas.
 
 ## Fallos corregidos durante el hito
 
@@ -34,3 +34,7 @@ El fixture de guardado pone el indicador a cero en RAM antes de que la meta escr
 Pueden existir casos de esquina entre bloques, fallos de entidades no cubiertos por cuatro instancias o diferencias de temporización en otro core. Reaparición usa blanking de pantalla y no una transición terminada. No hay animación de muerte, menú de archivos ni contador de progreso en pantalla. El guardado solo es un indicador de la meta del laboratorio. El audio se programó y se ejecutó, pero no se hizo una evaluación auditiva.
 
 Próxima validación: ejecutar esta misma ROM en Mesen, recorrerla manualmente, comprobar los ocho sprites por scanline y probar una placa/flashcart MMC3 NTSC con WRAM de batería. El siguiente desarrollo será completar power-ups y plataformas móviles antes de Yoshi y vuelo.
+
+## Comparación con la ROM SNES
+
+Además de las pruebas anteriores, `make test` incluye la misma comparación que `make motion`: los 12 casos diferenciales documentados en `motion-verification.md`. Sus resultados están en `motion-results.txt`; la línea base anterior, en `motion-baseline.txt`. La recreación independiente desde encendido en Snes9x reprodujo la referencia numérica byte por byte. Esto verifica ese subconjunto físico; no demuestra fidelidad de los niveles o gráficos de la ROM de laboratorio.

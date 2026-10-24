@@ -9,7 +9,7 @@ if ! command -v "$FCEUX" >/dev/null; then
 fi
 export FCEUX="$(command -v "$FCEUX")"
 if [[ "${1:-}" == --one ]]; then
-  exec timeout 90 "$FCEUX" --no-config 1 --sound 0 --pal 0 --newppu 1 --loadlua "$PWD/tests/$2" "$PWD/build/smw-nes-phase1.nes"
+  exec timeout 90 "$FCEUX" --no-config 1 --4buttonexit 0 --sound 0 --pal 0 --newppu 1 --loadlua "$PWD/tests/$2" "$PWD/build/smw-nes-physics-v0.2.nes"
 fi
 mkdir -p build
 rm -f build/emulator-results.txt build/persistence-results.txt build/traversal-results.txt

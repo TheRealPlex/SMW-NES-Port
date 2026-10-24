@@ -1,24 +1,20 @@
-# Física: comprobaciones y alcance
+# Física del motor 0.2
 
-La referencia es [SMWDisX](https://github.com/IsoFrieze/SMWDisX), commit `30643c7595a7d097d731de69476f8059c7cf98c3`, símbolos USA `SMW_U.sym`. Se consultó `bank_00.asm` y se comprobaron los bytes siguientes **contra el archivo proporcionado**, usando el mapeo LoROM. El desensamblado no se incluye en la entrega.
+Esta versión sustituye la aproximación inicial por un subconjunto de movimiento comprobado contra ejecución de la ROM SNES. Véase [`motion-verification.md`](motion-verification.md) para el protocolo y sus límites: 12 secuencias / 1,514 cuadros / 13,626 valores coincidentes. No se afirma equivalencia de todo el motor.
 
-| Símbolo / dirección SNES | Offset en archivo sin cabecera | Dato comprobado / uso |
-| --- | --- | --- |
-| `DATA_00D2BD`, `$00D2BD` | `$0052BD` | Tabla de impulsos; entradas pares para salto normal |
-| `MarioAccel_`, `$00D345` | `$005345` | Primeros valores: `FE80 FE80 0180 0180` |
-| `DATA_00D535`, `$00D535` | `$005535` | Límites iniciales: `EC 14 DC 24 DC 24 D0 30` |
-| `DATA_00D7A5`, `$00D7A5` | `$0057A5` | Primeras entradas de gravedad: `06`, `03` |
+La documentación consultada es [SMWDisX](https://github.com/IsoFrieze/SMWDisX), commit `30643c7595a7d097d731de69476f8059c7cf98c3`, `bank_00.asm` y símbolos USA. Las comprobaciones binarias iniciales están en `physics-reference-check.json`. ROM y desensamblado se mantienen fuera del repositorio.
 
-El detalle reproducible está en `physics-reference-check.json`. Para repetirlo con una copia local de la referencia y del mapa de símbolos:
+Cambios comprobados mediante trazas de la ROM original:
 
-```sh
-python3 tools/verify_physics_reference.py /ruta/SMW.sfc /ruta/SMWDisX/SMW_U.sym
-```
+- Integrar la velocidad del cuadro anterior **antes** de calcular la siguiente velocidad. La versión inicial se adelantaba un cuadro.
+- Mantener las fracciones de posición Y al tocar el suelo; no ponerlas a cero. El valor de velocidad Y en reposo es 6 con botón de salto suelto, aunque la colisión mantenga la posición sobre el suelo.
+- Conservar la fracción de velocidad horizontal y alternar aceleración/freno al llegar al límite, en lugar de recortarla de inmediato. Caminar/correr no siempre tienen exactamente el mismo byte de velocidad en cada cuadro.
+- Frenado de giro: aceleración normal de 1.5 unidades de velocidad, giro andando de 2.5, giro corriendo de 5. Una unidad equivale a 1/16 píxel/cuadro.
+- Límites nominales: caminar 20, correr 36, correr con P-meter lleno 48. La oscilación observada alrededor del límite se conserva.
+- P-meter: tope 112, aumento de 2 a velocidad de carrera en el suelo o durante un salto iniciado con P-meter lleno; descenso de 1 en los demás casos comprobados.
+- Impulsos normales por `abs(vx)>>3`: `B0 AE AB A9 A6 A4 A1 9F`. Se escoge el impulso antes de actualizar la velocidad horizontal.
+- Gravedad: primero limitar la velocidad positiva previa a 64, después sumar 3 si se mantiene salto o 6 si se suelta. Por eso la velocidad de caída registrada puede llegar a 67 o 70; el motor inicial la recortaba incorrectamente a 64 después de sumar.
 
-`CODE_00DC4F` del desensamblado muestra la integración NTSC: el byte alto de velocidad se interpreta en unidades de 1/16 píxel por fotograma, sumando su fracción a la posición. El motor NES utiliza esta escala Q4.4 y un byte adicional de fracción para la aceleración horizontal. Las posiciones X tienen 16 bits enteros y ocho de fracción; Y tiene ocho bits enteros y ocho de fracción porque este nivel tiene una sola pantalla de alto.
+La integración utiliza velocidad Q4.4 y una fracción adicional de ocho bits para la aceleración horizontal. Posición X: 16 bits enteros más ocho fraccionarios. Posición Y: ocho bits enteros más ocho fraccionarios en este laboratorio de una pantalla de alto.
 
-Límites actuales: caminar `±$14` (1.25 px/cuadro), correr `±$24` (2.25); aceleración `±$0180` en unidades de velocidad 8.8; impulso normal por `abs(vx)>>3`: `B0 AE AB A9 A6 A4 A1 9F`; gravedad 3 con A mantenido, 6 sin A. El máximo de caída de esta implementación se limita a `$40` (4 px/cuadro). La fricción terrestre usa 1 unidad de velocidad/cuadro; no hay arrastre automático en el aire.
-
-**Estas coincidencias no prueban fidelidad completa.** El motor no reproduce aún el P-meter, topes especiales de pendiente, superficies resbaladizas, agua, carga de objetos, giro, spin jump, órdenes completas de actualización ni todos los detalles de gravedad del original. Las colisiones son originales, rectangulares y separadas por eje; no son una traducción de las rutinas de SMW. No hay traza diferencial de ejecución de SNES. La selección de arte y las dimensiones del personaje son provisionales.
-
-Las trazas de prueba registran posiciones, velocidades y cámara por fotograma en `build/movement.csv`. El salto corto alcanzó Y=158 y el mantenido Y=127 partiendo de Y=192 en el escenario aislado: es una comprobación de altura variable de esta versión, no una medición comparativa de SNES.
+Las colisiones rectangulares de NES, animaciones, enemigos y cámara todavía son componentes provisionales. No se han reproducido pendientes, agua, superficies resbaladizas, agacharse, spin jump, transporte de objetos, capa o Yoshi. El resultado diferencial es específico de los casos planos documentados, no una afirmación de que SMW completo ya se ejecute en NES.

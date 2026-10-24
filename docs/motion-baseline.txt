@@ -1,0 +1,13 @@
+FAIL walk_right mismatched_frames=100/100 frame=1 field=3 expected=0 actual=16
+FAIL walk_left mismatched_frames=100/100 frame=1 field=1 expected=0 actual=-1
+FAIL run_right mismatched_frames=150/150 frame=1 field=3 expected=0 actual=16
+FAIL run_left mismatched_frames=150/150 frame=1 field=1 expected=0 actual=-1
+FAIL brake_run mismatched_frames=160/160 frame=1 field=3 expected=0 actual=16
+FAIL reverse_run mismatched_frames=160/160 frame=1 field=3 expected=0 actual=16
+FAIL release_run_button mismatched_frames=155/155 frame=1 field=3 expected=0 actual=16
+FAIL jump_tap mismatched_frames=72/72 frame=1 field=2 expected=0 actual=-5
+FAIL jump_hold mismatched_frames=82/82 frame=1 field=2 expected=0 actual=-5
+FAIL run_jump mismatched_frames=187/187 frame=1 field=3 expected=0 actual=16
+FAIL air_reverse mismatched_frames=88/88 frame=1 field=2 expected=0 actual=-5
+FAIL release_air_control mismatched_frames=110/110 frame=1 field=3 expected=0 actual=16
+TOTAL frames=1514 compared_values=13626 differing_values=7913 complete=true

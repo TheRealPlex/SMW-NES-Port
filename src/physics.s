@@ -1,12 +1,14 @@
 ; Signed speed is Q4.4; acceleration includes an extra fractional byte.
-; Verified SMW NTSC scale: CODE_00DC4F. Limited constants: docs/physics.md.
+; Differentially checked against the supplied ROM in Snes9x.
+; Flat-ground/normal-jump subset: docs/physics.md; tests/fixtures/.
 .proc Respawn
  lda #0
  sta px_frac
  sta py_frac
  sta vx_frac
  sta vx
- sta vy
+ sta p_meter
+ sta air_state
  sta grounded
  sta facing
  sta paused
@@ -29,6 +31,8 @@
  lda #0
  sta px+1
 @y:
+ lda #6
+ sta vy
  lda #192
  sta py
  lda #90
@@ -49,93 +53,7 @@
  sta saved_x+1
  lda py
  sta saved_y
- lda #$14
- sta maxspeed
- lda buttons
- and #BTN_B
- beq :+
- lda #$24
- sta maxspeed
-:
- lda buttons
- and #(BTN_LEFT|BTN_RIGHT)
- cmp #BTN_RIGHT
- beq @right
- cmp #BTN_LEFT
- beq @left
- ; Ground friction. No automatic horizontal drag in air.
- lda grounded
- beq @move
- lda vx
- ora vx_frac
- beq @move
- lda vx
- bmi @dragleft
- lda vx_frac
- sec
- sbc #$00
- sta vx_frac
- lda vx
- sbc #1
- sta vx
- bpl @move
- jmp @stop
-@dragleft:
- lda vx_frac
- clc
- adc #$00
- sta vx_frac
- lda vx
- adc #1
- sta vx
- bmi @move
-@stop:
- lda #0
- sta vx
- sta vx_frac
- jmp @move
-@right:
- lda #0
- sta facing
- lda vx_frac
- clc
- adc #$80
- sta vx_frac
- lda vx
- adc #1
- sta vx
- bmi @move
- cmp maxspeed
- bcc @move
- lda maxspeed
- sta vx
- lda #0
- sta vx_frac
- jmp @move
-@left:
- lda #1
- sta facing
- lda vx_frac
- sec
- sbc #$80
- sta vx_frac
- lda vx
- sbc #1
- sta vx
- bpl @move
- eor #$FF
- clc
- adc #1
- cmp maxspeed
- bcc @move
- lda maxspeed
- eor #$FF
- clc
- adc #1
- sta vx
- lda #0
- sta vx_frac
-@move:
+ ; SMW integrates last frame's speeds before calculating the next speeds.
  jsr IntegrateX
  ; World boundary clamp.
  lda px+1
@@ -157,7 +75,7 @@
  sta px_frac
 @collideX:
  lda vx
- beq @jump
+ beq @verticalStart
  lda px
  clc
  adc #2
@@ -186,7 +104,7 @@
  adc #14
  sta probe_y
  jsr ProbeSolid
- beq @jump
+ beq @verticalStart
 @wall:
  lda saved_x
  sta px
@@ -196,50 +114,7 @@
  sta vx
  sta vx_frac
  sta px_frac
-@jump:
- lda pressed
- and #BTN_A
- beq @gravity
- lda grounded
- beq @gravity
- ; Jump speed depends on horizontal speed, using verified normal-jump table.
- lda vx
- bpl :+
- eor #$FF
- clc
- adc #1
-:
- lsr a
- lsr a
- lsr a
- tax
- cpx #8
- bcc :+
- ldx #7
-:
- lda JumpSpeed,x
- sta vy
- lda #0
- sta grounded
- jsr SoundJump
-@gravity:
- lda #6
- sta temp2
- lda buttons
- and #BTN_A
- beq :+
- lda #3
- sta temp2
-:
- lda vy
- clc
- adc temp2
- bmi :+
- cmp #$40
- bcc :+
- lda #$40
-:
- sta vy
+@verticalStart:
  jsr IntegrateY
  ; Clamp to ceiling if 8-bit Y underflowed while rising.
  lda vy
@@ -283,8 +158,8 @@
  bne @land
  lda py
  cmp #224
- bcs @fell
- jmp @progress
+ jcs @fell
+ jmp @motionEnd
 @land:
  lda hit_row
  asl a
@@ -296,10 +171,10 @@
  sta py
  lda #0
  sta vy
- sta py_frac
+ sta air_state
  lda #1
  sta grounded
- jmp @progress
+ jmp @motionEnd
 @ceiling:
  lda py
  sta probe_y
@@ -313,7 +188,7 @@
  adc #0
  sta probe_x+1
  jsr ProbeSolid
- beq @progress
+ beq @motionEnd
 @headhit:
  lda hit_row
  clc
@@ -325,7 +200,42 @@
  sta py
  lda #0
  sta vy
- sta py_frac
+ sta air_state
+@motionEnd:
+ lda pressed
+ and #BTN_A
+ beq @nextVelocity
+ lda grounded
+ beq @nextVelocity
+ lda vx
+ bpl :+
+ eor #$FF
+ clc
+ adc #1
+:
+ lsr a
+ lsr a
+ lsr a
+ tax
+ cpx #8
+ bcc :+
+ ldx #7
+:
+ lda JumpSpeed,x
+ sta vy
+ lda #11
+ ldx p_meter
+ cpx #112
+ bcc :+
+ lda #12
+:
+ sta air_state
+ lda #0
+ sta grounded
+ jsr SoundJump
+@nextVelocity:
+ jsr HorizontalSpeed
+ jsr GravitySpeed
 @progress:
  lda px+1
  cmp #4
@@ -344,7 +254,8 @@
  sta completed
  jsr SaveProgress
  jsr SoundGoal
-@done: rts
+@done:
+ rts
 @fell: jmp Die
 .endproc
 ; Values read from bank00 JumpSpeed, not decoded from copied game code.
@@ -405,5 +316,185 @@ JumpSpeed: .byte $B0,$AE,$AB,$A9,$A6,$A4,$A1,$9F
  lda py
  adc delta
  sta py
+ rts
+.endproc
+
+; Flat, non-slippery small-Mario motion. Fractional velocity is intentionally
+; preserved when reaching a cap: SMW alternates acceleration and drag there.
+.proc HorizontalSpeed
+ lda buttons
+ and #(BTN_LEFT|BTN_RIGHT)
+ bne @direction
+ jsr DecPMeter
+ lda grounded
+ jeq @done
+ jmp DragSpeed
+@direction:
+ ; Right wins when both directions are pressed, matching the original path.
+ and #BTN_RIGHT
+ eor #1
+ sta facing
+ ; PMeter increases only at run speed, on the floor or in a P-jump.
+ lda buttons
+ and #BTN_B
+ beq @meterDown
+ lda vx
+ bpl :+
+ eor #$FF
+ clc
+ adc #1
+:
+ cmp #35
+ bcc @meterDown
+ lda grounded
+ bne @meterUp
+ lda air_state
+ cmp #12
+ bne @meterDown
+@meterUp:
+ lda p_meter
+ clc
+ adc #2
+ cmp #112
+ bcc :+
+ lda #112
+:
+ sta p_meter
+ jmp @limit
+@meterDown:
+ jsr DecPMeter
+@limit:
+ lda #20
+ sta maxspeed
+ lda buttons
+ and #BTN_B
+ beq @compare
+ lda #36
+ sta maxspeed
+ lda p_meter
+ cmp #112
+ bcc @compare
+ lda #48
+ sta maxspeed
+@compare:
+ lda facing
+ bne @negative
+ lda vx
+ bmi @accel
+ cmp maxspeed
+ bcs @drag
+ jmp @accel
+@negative:
+ ; Compute the signed negative cap. Do not abs(vx), which loses a fraction
+ ; of precision on the negative side of the signed 8.8 representation.
+ lda maxspeed
+ eor #$FF
+ clc
+ adc #1
+ sta temp
+ lda vx
+ bpl @accel
+ cmp temp
+ bcc @drag
+ beq @drag
+@accel:
+ ; Normal acceleration = 1.5 velocity units; skid = 2.5 walking / 5 running.
+ lda #$80
+ sta temp2
+ lda #1
+ sta temp
+ lda vx
+ beq @apply
+ ; Facing uses 0=right,1=left; compare signs explicitly.
+ lda facing
+ beq @turnRight
+ lda vx
+ bmi @apply
+ jmp @skid
+@turnRight:
+ lda vx
+ bpl @apply
+@skid:
+ lda #2
+ sta temp
+ lda buttons
+ and #BTN_B
+ beq @apply
+ lda #5
+ sta temp
+ lda #0
+ sta temp2
+@apply:
+ lda facing
+ bne @subtract
+ lda vx_frac
+ clc
+ adc temp2
+ sta vx_frac
+ lda vx
+ adc temp
+ sta vx
+ rts
+@subtract:
+ lda vx_frac
+ sec
+ sbc temp2
+ sta vx_frac
+ lda vx
+ sbc temp
+ sta vx
+@done: rts
+@drag: jmp DragSpeed
+.endproc
+.proc DecPMeter
+ lda p_meter
+ beq @done
+ dec p_meter
+@done: rts
+.endproc
+.proc DragSpeed
+ lda vx
+ ora vx_frac
+ beq @done
+ lda vx
+ bmi @negative
+ dec vx
+ bpl @done
+ jmp @stop
+@negative:
+ inc vx
+ bmi @done
+ lda #0
+ sta vx_frac
+@stop:
+ lda #0
+ sta vx
+ sta vx_frac
+@done: rts
+.endproc
+.proc GravitySpeed
+ lda #6
+ sta temp2
+ lda buttons
+ and #BTN_A
+ beq :+
+ lda #3
+ sta temp2
+:
+ lda vy
+ bmi @add
+ cmp #64
+ bcc :+
+ lda #64
+:
+ ldx air_state
+ cpx #11
+ bne @add
+ ldx #36
+ stx air_state
+@add:
+ clc
+ adc temp2
+ sta vy
  rts
 .endproc

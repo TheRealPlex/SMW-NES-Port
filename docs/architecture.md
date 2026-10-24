@@ -1,4 +1,4 @@
-# Arquitectura del hito 0.1
+# Arquitectura del motor 0.2
 
 | Módulo | Responsabilidad |
 | --- | --- |
@@ -25,7 +25,7 @@ Nivel de 128×15 metatiles de 16×16. Cada metatile referencia cuatro tiles de 8
 
 Las dos nametables forman un ring horizontal de 512 píxeles. Al cambiar de columna de cámara se prepara una columna de 30 tiles. El NMI la sube con incremento PPU de 32, hace DMA de OAM y restablece scroll y PPUCTRL. La cámara conserva toda su coordenada mundial de 16 bits; solo la dirección PPU usa el ring. La reaparición reconstruye ambas nametables con rendering apagado.
 
-Se midieron **1,115 ciclos como máximo desde entrada NMI hasta la instrucción RTI**, incluidos DMA y la columna, durante las pruebas locales; no incluye la propia RTI ni la latencia previa de interrupción. Frente a aproximadamente 2,273 ciclos de VBlank NTSC, hay margen para este hito. No es un perfil exhaustivo de todos los futuros estados del juego. La prueba de 3,600 fotogramas comprueba estabilidad, no todas las combinaciones posibles de sprites/ciclos.
+Se midieron **1,114 ciclos como máximo desde entrada NMI hasta la instrucción RTI**, incluidos DMA y la columna, durante las pruebas locales; no incluye la propia RTI ni la latencia previa de interrupción. Frente a aproximadamente 2,273 ciclos de VBlank NTSC, hay margen para este hito. No es un perfil exhaustivo de todos los futuros estados del juego. La prueba de 3,600 fotogramas comprueba estabilidad, no todas las combinaciones posibles de sprites/ciclos.
 
 En este hito las paletas de fondo comparten colores y los atributos son cero; se respeta la cuadrícula real de atributos. Cada actor usa cuatro sprites de 8×8. No hay framebuffer, imágenes SNES pegadas a pantalla ni código 65816 ejecutándose en NES.
 

@@ -43,6 +43,9 @@ invulnerable: .res 1
 sfx_timer: .res 1
 entity_index: .res 1
 rebuild: .res 1
+p_meter: .res 1
+air_state: .res 1
+.exportzp p_meter,air_state,py_frac
 .segment "BSS"
 column_buffer: .res 30
 enemy_x: .res 4
